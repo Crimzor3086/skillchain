@@ -1,0 +1,22 @@
+[package]
+name = "skillchain"
+version = "0.1.0"
+description = "SkillChain credential program for soulbound NFTs"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "skillchain"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.28.0"
+anchor-spl = "0.28.0"
+mpl-token-metadata = "1.13.2"
+solana-program = "~1.16.0"

@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int                  @id @default(autoincrement())
+  walletAddress     String               @unique
+  username          String               @unique
+  email             String?              @unique
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relations
+  userQuestProgress UserQuestProgress[]
+  credentials       Credential[]
+  
+  @@map("users")
+}
+
+model Quest {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  category         String   // e.g., "Programming", "Design", "Marketing"
+  difficulty       String   // "beginner", "intermediate", "advanced"
+  estimatedTime    Int      // in minutes
+  requirements     String[] // Prerequisites or requirements
+  learningObjectives String[] // What users will learn
+  content          Json?    // Quest content, steps, resources
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  userQuestProgress UserQuestProgress[]
+  credentials       Credential[]
+  
+  @@map("quests")
+}
+
+model UserQuestProgress {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  questId     Int
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  progress    Json?     // Store progress data (steps completed, etc.)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, questId])
+  @@map("user_quest_progress")
+}
+
+model Credential {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  questId     Int
+  tokenMint   String    @unique // Solana token mint address
+  metadataUri String    // IPFS URI for NFT metadata
+  mintedAt    DateTime  @default(now())
+  burnedAt    DateTime? // If credential is revoked/burned
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  
+  @@map("credentials")
+}
+
+// Optional: Admin/System tables
+model Admin {
+  id            Int      @id @default(autoincrement())
+  walletAddress String   @unique
+  username      String   @unique
+  role          String   @default("admin") // "admin", "moderator"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("admins")
+}
+
+model SystemConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+  
+  @@map("system_config")
+}
