@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 const { PublicKey } = require('@solana/web3.js');
 const nacl = require('tweetnacl');
+const bs58 = require('bs58');
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,18 @@ const authenticateWallet = async (req, res) => {
     try {
       const publicKey = new PublicKey(walletAddress);
       const messageBytes = new TextEncoder().encode(message);
-      const signatureBytes = Buffer.from(signature, 'base64');
+      
+      // Handle both base64 and base58 encoded signatures
+      let signatureBytes;
+      try {
+        signatureBytes = Buffer.from(signature, 'base64');
+      } catch {
+        try {
+          signatureBytes = bs58.decode(signature);
+        } catch {
+          throw new Error('Invalid signature encoding');
+        }
+      }
       
       const isValid = nacl.sign.detached.verify(
         messageBytes,

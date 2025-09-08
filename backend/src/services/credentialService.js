@@ -15,12 +15,21 @@ const mintCredential = async ({ userId, questId, walletAddress, questTitle, ques
   try {
     console.log(`Minting credential for user ${userId}, quest ${questId}`);
 
+    // Get quest details for metadata
+    const quest = await prisma.quest.findUnique({
+      where: { id: questId }
+    });
+
+    if (!quest) {
+      throw new Error('Quest not found');
+    }
+
     // Create metadata for IPFS
     const metadata = {
       name: `${questTitle} - SkillChain Credential`,
-      description: `This credential certifies successful completion of "${questTitle}" on SkillChain Platform.`,
-      image: `${process.env.BASE_URL}/api/credentials/placeholder/image`, // Will be updated after DB save
-      external_url: `${process.env.BASE_URL}/credentials/placeholder`, // Will be updated after DB save
+      description: `This credential certifies successful completion of "${questTitle}" on SkillChain Platform. This is a soulbound NFT that cannot be transferred and serves as permanent proof of skill achievement.`,
+      image: `${process.env.BASE_URL || 'http://localhost:3001'}/api/credentials/image/placeholder`,
+      external_url: `${process.env.BASE_URL || 'http://localhost:3001'}/credentials/verify`,
       attributes: [
         {
           trait_type: "Quest Title",
@@ -29,6 +38,14 @@ const mintCredential = async ({ userId, questId, walletAddress, questTitle, ques
         {
           trait_type: "Quest ID",
           value: questId.toString()
+        },
+        {
+          trait_type: "Category",
+          value: quest.category
+        },
+        {
+          trait_type: "Difficulty",
+          value: quest.difficulty
         },
         {
           trait_type: "Platform",
@@ -41,13 +58,19 @@ const mintCredential = async ({ userId, questId, walletAddress, questTitle, ques
         {
           trait_type: "Soulbound",
           value: "true"
+        },
+        {
+          trait_type: "Completion Date",
+          value: new Date().toISOString().split('T')[0]
         }
       ],
       properties: {
         category: "credential",
         questId: questId,
         userId: userId,
-        soulbound: true
+        soulbound: true,
+        blockchain: "solana",
+        standard: "spl-token"
       }
     };
 
@@ -55,8 +78,7 @@ const mintCredential = async ({ userId, questId, walletAddress, questTitle, ques
     const metadataUri = await ipfsService.uploadMetadata(metadata);
     console.log(`Metadata uploaded to IPFS: ${metadataUri}`);
 
-    // For now, we'll create a placeholder token mint
-    // In production, this would interact with the actual Solana program
+    // Generate a realistic-looking Solana token mint address for demo
     const tokenMint = generatePlaceholderTokenMint();
 
     // Save credential to database
@@ -87,12 +109,49 @@ const mintCredential = async ({ userId, questId, walletAddress, questTitle, ques
 
     console.log(`Credential saved to database with ID: ${credential.id}`);
 
-    // TODO: Implement actual Solana program interaction
-    // This would involve:
-    // 1. Loading the server wallet keypair
-    // 2. Creating the mint account
-    // 3. Calling the credential program to mint the soulbound NFT
-    // 4. Updating the database with the actual token mint address
+    // In a production environment, this is where you would:
+    // 1. Load the server wallet keypair from environment variables
+    // 2. Create a new mint account for the credential
+    // 3. Call the Solana program to mint the soulbound NFT
+    // 4. Update the database with the actual token mint address
+    
+    // Example of what the Solana integration would look like:
+    /*
+    try {
+      const serverKeypair = Keypair.fromSecretKey(
+        Buffer.from(process.env.SERVER_WALLET_PRIVATE_KEY, 'base64')
+      );
+      
+      const program = getCredentialProgram();
+      const mintKeypair = Keypair.generate();
+      
+      const tx = await program.methods
+        .mintCredential(
+          new BN(questId),
+          metadataUri,
+          questTitle,
+          "SKILL"
+        )
+        .accounts({
+          recipient: new PublicKey(walletAddress),
+          mint: mintKeypair.publicKey,
+          // ... other accounts
+        })
+        .signers([serverKeypair, mintKeypair])
+        .rpc();
+        
+      // Update database with actual mint address
+      await prisma.credential.update({
+        where: { id: credential.id },
+        data: { tokenMint: mintKeypair.publicKey.toString() }
+      });
+      
+      console.log(`Credential minted on Solana: ${tx}`);
+    } catch (solanaError) {
+      console.error('Solana minting failed:', solanaError);
+      // For demo purposes, continue with placeholder
+    }
+    */
 
     return {
       id: credential.id,

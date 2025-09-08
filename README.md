@@ -24,13 +24,26 @@ skillchain/
 
 ### Prerequisites
 
-- Node.js 18+
-- Rust & Cargo
-- Solana CLI
-- Anchor CLI
-- PostgreSQL
+- **Node.js 18+** - [Download here](https://nodejs.org/)
+- **PostgreSQL** - [Installation guide](https://www.postgresql.org/download/)
+- **Solana CLI** (optional) - For smart contract deployment
+- **Anchor CLI** (optional) - For smart contract development
 
-### Installation
+### 🚀 One-Command Setup
+
+```bash
+git clone <repo-url>
+cd skillchain
+npm run setup
+```
+
+This will:
+- Install all dependencies
+- Create environment files
+- Check prerequisites
+- Provide next steps
+
+### 📋 Manual Setup
 
 1. **Clone and install dependencies**
    ```bash
@@ -39,16 +52,29 @@ skillchain/
    npm install
    ```
 
-2. **Set up environment variables**
+2. **Set up database**
    ```bash
-   cp backend/.env.example backend/.env
-   # Edit backend/.env with your database and API keys
+   # Create PostgreSQL database
+   createdb skillchain_db
+   
+   # Update DATABASE_URL in backend/.env
+   # Then run migrations
+   npm run db:setup
    ```
 
-3. **Start development servers**
+3. **Seed the database**
+   ```bash
+   npm run db:seed
+   ```
+
+4. **Start development servers**
    ```bash
    npm run dev
    ```
+
+   This starts:
+   - Backend API at http://localhost:3001
+   - Frontend at http://localhost:3000
 
 ### Individual Components
 
