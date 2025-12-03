@@ -12,7 +12,16 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ['ipfs.io', 'gateway.pinata.cloud'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ipfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gateway.pinata.cloud',
+      },
+    ],
   },
 
   // Webpack configuration for Solana
@@ -36,11 +45,6 @@ const nextConfig = {
     }
 
     return config;
-  },
-
-  // Experimental features
-  experimental: {
-    appDir: true,
   },
 };
 
