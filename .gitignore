@@ -117,6 +117,3 @@ target/
 *.json
 
 # Solana keypairs (NEVER commit these!)
-*.json
-id.json
-keypair.json
