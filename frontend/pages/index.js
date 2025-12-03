@@ -60,7 +60,7 @@ export default function Home() {
         <title>SkillChain - Web3 Credentialing Platform</title>
         <meta name="description" content="Earn blockchain-verified credentials through interactive learning quests" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
